@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}QImg{% endblock %}</title>
+    <!-- Tailwind CSS CDN (v4 via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Optionally customize Tailwind (light)
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: '#eff6ff',
+                100: '#dbeafe',
+                200: '#bfdbfe',
+                300: '#93c5fd',
+                400: '#60a5fa',
+                500: '#3b82f6',
+                600: '#2563eb',
+                700: '#1d4ed8',
+                800: '#1e40af',
+                900: '#1e3a8a'
+              }
+            }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body class="min-h-screen bg-gray-50 text-gray-900">
+    <header class="border-b bg-white">
+      <div class="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between">
+        <h1 class="text-2xl font-semibold"><a href="{{ url_for('index') }}">QImg</a></h1>
+        <nav class="flex items-center gap-4 text-sm">
+          <a class="text-gray-700 hover:text-primary-700" href="{{ url_for('index') }}">Home/Gallery</a>
+          <a class="text-gray-700 hover:text-primary-700" href="{{ url_for('generate_page') }}">Generate</a>
+          <a class="text-gray-700 hover:text-primary-700" href="{{ url_for('edit_page') }}">Edit</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-5xl px-4 py-6">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="mb-4 space-y-2">
+            {% for msg in messages %}
+              <div class="rounded-md border border-red-200 bg-red-50 px-4 py-2 text-red-800">
+                {{ msg }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="mt-8 border-t bg-white">
+      <div class="mx-auto max-w-5xl px-4 py-6 text-sm text-gray-500">
+        Chang Sau Sheong 2015
+      </div>
+    </footer>
+  </body>
+</html>

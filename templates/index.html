@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}QImg — Home{% endblock %}
+{% block content %}
+  <div class="mx-auto max-w-3xl">
+    <div class="rounded-lg border bg-white p-8 text-center shadow-sm">
+      <h2 class="mb-3 text-2xl font-semibold">Welcome to QImg</h2>
+      <p class="mb-6 text-gray-600">Generate or edit images with Qwen models. Browse recent results in the gallery.</p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <a href="{{ url_for('generate_page') }}" class="rounded-md bg-primary-600 px-4 py-2 font-medium text-white hover:bg-primary-700">Generate</a>
+        <a href="{{ url_for('edit_page') }}" class="rounded-md bg-primary-50 px-4 py-2 font-medium text-primary-700 hover:bg-primary-100">Edit</a>
+        <a href="{{ url_for('gallery') }}" class="rounded-md bg-gray-100 px-4 py-2 font-medium text-gray-800 hover:bg-gray-200">Gallery</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

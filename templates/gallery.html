@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}QImg — Gallery{% endblock %}
+{% block content %}
+  <div class="mx-auto max-w-5xl">
+    <h2 class="mb-4 text-xl font-semibold">Gallery</h2>
+    <div id="job-banner" class="mb-4 hidden rounded-md border border-green-200 bg-green-50 px-4 py-2 text-green-800">
+      New images are ready. <button id="refresh-btn" class="ml-2 underline">Refresh</button>
+    </div>
+    {% if items %}
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" id="gallery-grid">
+        {% for it in items %}
+          <div class="group overflow-hidden rounded-lg border bg-white shadow-sm">
+            <a href="{{ it.url }}" target="_blank">
+              <img src="{{ it.url }}" alt="{{ it.name }}" class="aspect-square w-full object-cover transition-transform duration-200 group-hover:scale-105" />
+            </a>
+            <div class="border-t p-3 text-sm">
+              <div class="flex items-center justify-between">
+                <span class="rounded bg-gray-100 px-2 py-0.5 text-xs capitalize text-gray-700">{{ it.kind }}</span>
+                <span class="font-mono text-gray-500 truncate">{{ it.name }}</span>
+              </div>
+              <div class="mt-2 flex items-center justify-end gap-2">
+                <a href="{{ url_for('download_output', filename=it.name) }}" class="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">Download</a>
+                <button data-name="{{ it.name }}" class="btn-delete rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50">Delete</button>
+                <a href="{{ url_for('edit_page') }}?src=outputs/{{ it.name }}" class="rounded-md bg-primary-600 px-3 py-1 text-xs font-medium text-white hover:bg-primary-700">Edit this</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="rounded-md border bg-white p-6 text-gray-600">No images yet. Generate or edit to see results here.</div>
+    {% endif %}
+  </div>
+
+  <script>
+    // Poll for newly completed jobs and notify the user
+    (function(){
+      const banner = document.getElementById('job-banner');
+      const refreshBtn = document.getElementById('refresh-btn');
+      const grid = document.getElementById('gallery-grid');
+      let since = Date.now() / 1000; // only notify for completions after page load
+
+      function showBanner() {
+        if (banner) banner.classList.remove('hidden');
+      }
+
+      function prependItems(items) {
+        if (!grid) return;
+        for (const it of items) {
+          const card = document.createElement('div');
+          card.className = 'group overflow-hidden rounded-lg border bg-white shadow-sm';
+          card.innerHTML = `
+            <a href="${it.url}" target="_blank">
+              <img src="${it.url}" alt="${it.name}" class="aspect-square w-full object-cover transition-transform duration-200 group-hover:scale-105" />
+            </a>
+            <div class="border-t p-3 text-sm">
+              <div class="flex items-center justify-between">
+                <span class="rounded bg-gray-100 px-2 py-0.5 text-xs capitalize text-gray-700">${it.kind}</span>
+                <span class="font-mono text-gray-500 truncate">${it.name}</span>
+              </div>
+              <div class="mt-2 flex items-center justify-end gap-2">
+                <a href="/download/${it.name}" class="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">Download</a>
+                <button data-name="${it.name}" class="btn-delete rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50">Delete</button>
+                <a href="{{ url_for('edit_page') }}?src=outputs/${it.name}" class="rounded-md bg-primary-600 px-3 py-1 text-xs font-medium text-white hover:bg-primary-700">Edit this</a>
+              </div>
+            </div>`;
+          grid.prepend(card);
+        }
+      }
+
+      async function poll() {
+        try {
+          const res = await fetch(`/jobs/updates?since=${since}`);
+          if (!res.ok) throw new Error('poll failed');
+          const data = await res.json();
+          since = data.since || since;
+          if (data.items && data.items.length) {
+            // Prepend new items and notify
+            prependItems(data.items);
+            showBanner();
+          }
+        } catch (e) {
+          // silent fail; try again later
+        } finally {
+          setTimeout(poll, 4000);
+        }
+      }
+
+      // Handle delete clicks via event delegation
+      document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.btn-delete');
+        if (!btn) return;
+        const name = btn.getAttribute('data-name');
+        if (!name) return;
+        if (!confirm(`Delete ${name}? This cannot be undone.`)) return;
+        try {
+          const res = await fetch('/gallery/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+          });
+          const data = await res.json();
+          if (data.ok) {
+            // remove card
+            const card = btn.closest('.group');
+            if (card) card.remove();
+          } else {
+            alert(data.error || 'Delete failed');
+          }
+        } catch {
+          alert('Delete failed');
+        }
+      });
+
+      if (refreshBtn) refreshBtn.addEventListener('click', () => location.reload());
+      poll();
+    })();
+  </script>
+{% endblock %}

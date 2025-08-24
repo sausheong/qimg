@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}QImg — Result{% endblock %}
+{% block content %}
+  <div class="mx-auto max-w-3xl">
+    <div class="mb-4">
+      <a href="{{ url_for('index') }}" class="text-primary-700 hover:underline">← Back</a>
+    </div>
+
+    <div class="rounded-lg border bg-white p-6 shadow-sm">
+      <h2 class="mb-4 text-xl font-semibold">Result</h2>
+      <img src="{{ image_url }}" alt="Generated Image" class="w-full rounded-md border" />
+      <div class="mt-4">
+        <a href="{{ image_url }}" download class="inline-flex items-center rounded-md bg-primary-600 px-4 py-2 font-medium text-white hover:bg-primary-700">Download</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

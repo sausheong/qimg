@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}QImg — Edit{% endblock %}
+{% block content %}
+  <div class="mx-auto max-w-3xl">
+    <h2 class="mb-4 text-xl font-semibold">Edit</h2>
+    <form action="{{ url_for('edit_action') }}" method="post" enctype="multipart/form-data" class="space-y-4">
+      {% if preview_url %}
+        <input type="hidden" name="src" value="{{ src }}" />
+        <div>
+          <label class="mb-1 block text-sm font-medium">Selected Image</label>
+          <img src="{{ preview_url }}" alt="Selected image" class="w-full rounded-md border" />
+          <p class="mt-1 text-xs text-gray-600">Using image from gallery. You can upload another file to replace it.</p>
+        </div>
+      {% endif %}
+      <div>
+        <label class="mb-1 block text-sm font-medium" for="image">Upload Image</label>
+        <input id="image" name="image" type="file" accept="image/*" class="w-full rounded-md border-gray-300 file:mr-4 file:rounded-md file:border-0 file:bg-primary-50 file:px-4 file:py-2 file:text-primary-700 hover:file:bg-primary-100" />
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium" for="prompt_edit">Edit Prompt</label>
+        <textarea id="prompt_edit" name="prompt_edit" rows="5" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" placeholder="Describe the change you want..."></textarea>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <label class="mb-1 block text-sm font-medium" for="steps_edit">Steps</label>
+          <input id="steps_edit" name="steps_edit" type="number" min="1" value="100" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium" for="true_cfg_scale_edit">CFG Scale</label>
+          <input id="true_cfg_scale_edit" name="true_cfg_scale_edit" type="number" step="0.1" value="4.0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium" for="seed_edit">Seed (optional)</label>
+          <input id="seed_edit" name="seed_edit" type="number" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" />
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium" for="negative_prompt_edit">Negative Prompt</label>
+        <input id="negative_prompt_edit" name="negative_prompt_edit" type="text" value="" class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" />
+      </div>
+
+      <div>
+        <button type="submit" class="inline-flex items-center rounded-md bg-primary-600 px-4 py-2 font-medium text-white hover:bg-primary-700">Edit Image</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}
