@@ -2,6 +2,7 @@ import os
 import uuid
 import threading
 import time
+import json
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
@@ -57,6 +58,22 @@ def _worker_generate(prompt: str, negative_prompt: str, aspect_ratio: str, steps
             out_path=str(out_path),
         )
         _record_completion(out_name, "generated")
+        # Save metadata with prompt info
+        meta = {
+            "kind": "generated",
+            "filename": out_name,
+            "prompt": prompt,
+            "negative_prompt": negative_prompt,
+            "aspect_ratio": aspect_ratio,
+            "steps": steps,
+            "true_cfg_scale": true_cfg_scale,
+            "seed": seed,
+            "created_ts": time.time(),
+        }
+        try:
+            (OUTPUT_DIR / f"{Path(out_name).stem}.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2))
+        except Exception as me:
+            print(f"Failed to write metadata for {out_name}: {me}")
     except Exception as e:
         # Log to console for now
         print(f"Generate job failed: {e}")
@@ -81,6 +98,22 @@ def _worker_edit(source_path: Path, prompt: str, true_cfg_scale: float, negative
                 out_path=str(out_path),
             )
         _record_completion(out_name, "edited")
+        # Save metadata with prompt info
+        meta = {
+            "kind": "edited",
+            "filename": out_name,
+            "source": source_path.name,
+            "prompt": prompt,
+            "negative_prompt": negative_prompt,
+            "steps": steps,
+            "true_cfg_scale": true_cfg_scale,
+            "seed": seed,
+            "created_ts": time.time(),
+        }
+        try:
+            (OUTPUT_DIR / f"{Path(out_name).stem}.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2))
+        except Exception as me:
+            print(f"Failed to write metadata for {out_name}: {me}")
     except Exception as e:
         print(f"Edit job failed: {e}")
     finally:
@@ -246,7 +279,16 @@ def gallery_delete():
 @app.get("/result/<path:filename>")
 def result(filename: str):
     # Render result page with image
-    return render_template("result.html", image_url=url_for("static", filename=f"outputs/{filename}"))
+    safe_name = Path(filename).name
+    image_url = url_for("static", filename=f"outputs/{safe_name}")
+    meta_path = OUTPUT_DIR / f"{Path(safe_name).stem}.json"
+    meta: Dict[str, Any] = {}
+    if meta_path.exists():
+        try:
+            meta = json.loads(meta_path.read_text())
+        except Exception:
+            meta = {}
+    return render_template("result.html", image_url=image_url, filename=safe_name, meta=meta)
 
 
 @app.get("/uploads/<path:filename>")

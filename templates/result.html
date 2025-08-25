@@ -7,10 +7,57 @@
     </div>
 
     <div class="rounded-lg border bg-white p-6 shadow-sm">
-      <h2 class="mb-4 text-xl font-semibold">Result</h2>
-      <img src="{{ image_url }}" alt="Generated Image" class="w-full rounded-md border" />
-      <div class="mt-4">
-        <a href="{{ image_url }}" download class="inline-flex items-center rounded-md bg-primary-600 px-4 py-2 font-medium text-white hover:bg-primary-700">Download</a>
+      <h2 class="mb-2 text-xl font-semibold">Result</h2>
+      <p class="mb-4 text-sm text-gray-600 font-mono truncate">{{ filename }}</p>
+      <img src="{{ image_url }}" alt="Image" class="w-full rounded-md border" />
+      <div class="mt-4 flex flex-wrap gap-2">
+        <a href="{{ image_url }}" download class="inline-flex items-center rounded-md border border-gray-300 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50">Download</a>
+        <a href="{{ url_for('edit_page') }}?src=outputs/{{ filename }}" class="inline-flex items-center rounded-md bg-primary-600 px-3 py-1 text-sm font-medium text-white hover:bg-primary-700">Edit this</a>
+        <a href="{{ image_url }}" target="_blank" class="inline-flex items-center rounded-md border border-gray-300 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50">Open image</a>
+      </div>
+
+      <div class="mt-6">
+        <h3 class="mb-2 text-lg font-semibold">Prompt</h3>
+        {% if meta and meta.prompt %}
+          <pre class="whitespace-pre-wrap rounded-md border bg-gray-50 p-3 text-sm">{{ meta.prompt }}</pre>
+        {% else %}
+          <p class="text-sm text-gray-600">No prompt metadata available.</p>
+        {% endif %}
+      </div>
+
+      <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <div class="text-xs uppercase tracking-wide text-gray-500">Type</div>
+          <div class="text-sm">{{ meta.kind or 'unknown' }}</div>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wide text-gray-500">Negative Prompt</div>
+          <div class="text-sm break-words">{{ meta.negative_prompt or '' }}</div>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wide text-gray-500">Steps</div>
+          <div class="text-sm">{{ meta.steps or '' }}</div>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wide text-gray-500">CFG Scale</div>
+          <div class="text-sm">{{ meta.true_cfg_scale or '' }}</div>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wide text-gray-500">Seed</div>
+          <div class="text-sm">{{ meta.seed if meta and 'seed' in meta else '' }}</div>
+        </div>
+        {% if meta and meta.aspect_ratio %}
+        <div>
+          <div class="text-xs uppercase tracking-wide text-gray-500">Aspect Ratio</div>
+          <div class="text-sm">{{ meta.aspect_ratio }}</div>
+        </div>
+        {% endif %}
+        {% if meta and meta.source %}
+        <div>
+          <div class="text-xs uppercase tracking-wide text-gray-500">Source</div>
+          <div class="text-sm font-mono">{{ meta.source }}</div>
+        </div>
+        {% endif %}
       </div>
     </div>
   </div>

@@ -1,0 +1,11 @@
+{
+  "kind": "generated",
+  "filename": "gen_8e955dbe.png",
+  "prompt": "Create a detailed watercolor painting of mythical creatures like a phoenix or dragon. Use soft flowing lines and rich colors with the tone giving a majestic and mysterious feeling.",
+  "negative_prompt": " ",
+  "aspect_ratio": "1:1",
+  "steps": 50,
+  "true_cfg_scale": 4.0,
+  "seed": null,
+  "created_ts": 1756047602.1363406
+}

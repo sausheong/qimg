@@ -19,9 +19,10 @@
                 <span class="font-mono text-gray-500 truncate">{{ it.name }}</span>
               </div>
               <div class="mt-2 flex items-center justify-end gap-2">
+                <a href="{{ url_for('result', filename=it.name) }}" class="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">View</a>
                 <a href="{{ url_for('download_output', filename=it.name) }}" class="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">Download</a>
                 <button data-name="{{ it.name }}" class="btn-delete rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50">Delete</button>
-                <a href="{{ url_for('edit_page') }}?src=outputs/{{ it.name }}" class="rounded-md bg-primary-600 px-3 py-1 text-xs font-medium text-white hover:bg-primary-700">Edit this</a>
+                <a href="{{ url_for('edit_page') }}?src=outputs/{{ it.name }}" class="rounded-md border border-primary-600 bg-primary-600 px-3 py-1 text-xs font-medium text-white hover:bg-primary-700">Edit</a>
               </div>
             </div>
           </div>
@@ -59,6 +60,7 @@
                 <span class="font-mono text-gray-500 truncate">${it.name}</span>
               </div>
               <div class="mt-2 flex items-center justify-end gap-2">
+                <a href="/result/${it.name}" class="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">View</a>
                 <a href="/download/${it.name}" class="rounded-md border border-gray-300 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50">Download</a>
                 <button data-name="${it.name}" class="btn-delete rounded-md border border-red-300 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50">Delete</button>
                 <a href="{{ url_for('edit_page') }}?src=outputs/${it.name}" class="rounded-md bg-primary-600 px-3 py-1 text-xs font-medium text-white hover:bg-primary-700">Edit this</a>
