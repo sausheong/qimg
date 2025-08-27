@@ -4,6 +4,9 @@ import torch
 
 from diffusers import DiffusionPipeline
 from diffusers import QwenImageEditPipeline
+from diffusers import QwenImageTransformer2DModel
+from transformers.modeling_utils import no_init_weights
+from dfloat11 import DFloat11Model
 import os
 
 # -----------------------------
@@ -31,7 +34,34 @@ def _get_img_pipeline() -> DiffusionPipeline:
     global _img_pipe
     if _img_pipe is None:
         model_name = "Qwen/Qwen-Image"
-        pipe = DiffusionPipeline.from_pretrained(model_name, torch_dtype=_TORCH_DTYPE)
+        # Build transformer in bfloat16 without initializing weights, then load DFloat11 weights
+        with no_init_weights():
+            transformer = QwenImageTransformer2DModel.from_config(
+                QwenImageTransformer2DModel.load_config(model_name, subfolder="transformer"),
+            ).to(_TORCH_DTYPE)
+
+        # Optional CPU offload controls via env
+        cpu_offload = (_DEVICE == "cuda" and _ENABLE_CPU_OFFLOAD)
+        blocks_env = os.environ.get("QIMG_CPU_OFFLOAD_BLOCKS")
+        cpu_offload_blocks = int(blocks_env) if (blocks_env and blocks_env.isdigit()) else None
+        pin_memory = os.environ.get("QIMG_PIN_MEMORY", "1") == "1"
+
+        # Inject DFloat11 weights into the transformer
+        DFloat11Model.from_pretrained(
+            "DFloat11/Qwen-Image-DF11",
+            device="cpu",
+            cpu_offload=cpu_offload,
+            cpu_offload_blocks=cpu_offload_blocks,
+            pin_memory=pin_memory,
+            bfloat16_model=transformer,
+        )
+
+        # Build the diffusion pipeline using the transformed transformer
+        pipe = DiffusionPipeline.from_pretrained(
+            model_name,
+            transformer=transformer,
+            torch_dtype=_TORCH_DTYPE,
+        )
         # Memory optimizations
         try:
             pipe.enable_attention_slicing()
@@ -58,7 +88,35 @@ def _get_img_pipeline() -> DiffusionPipeline:
 def _get_edit_pipeline() -> QwenImageEditPipeline:
     global _edit_pipe
     if _edit_pipe is None:
-        pipe = QwenImageEditPipeline.from_pretrained("Qwen/Qwen-Image-Edit")
+        model_name = "Qwen/Qwen-Image-Edit"
+        # Build edit transformer in bf16 without initializing weights, then load DF11 edit weights
+        with no_init_weights():
+            transformer = QwenImageTransformer2DModel.from_config(
+                QwenImageTransformer2DModel.load_config(model_name, subfolder="transformer"),
+            ).to(_TORCH_DTYPE)
+
+        # Optional CPU offload controls via env
+        cpu_offload = (_DEVICE == "cuda" and _ENABLE_CPU_OFFLOAD)
+        blocks_env = os.environ.get("QIMG_CPU_OFFLOAD_BLOCKS")
+        cpu_offload_blocks = int(blocks_env) if (blocks_env and blocks_env.isdigit()) else None
+        pin_memory = os.environ.get("QIMG_PIN_MEMORY", "1") == "1"
+
+        # Inject DFloat11 edit weights into the transformer
+        DFloat11Model.from_pretrained(
+            "DFloat11/Qwen-Image-Edit-DF11",
+            device="cpu",
+            cpu_offload=cpu_offload,
+            cpu_offload_blocks=cpu_offload_blocks,
+            pin_memory=pin_memory,
+            bfloat16_model=transformer,
+        )
+
+        # Build the edit pipeline using the transformed transformer
+        pipe = QwenImageEditPipeline.from_pretrained(
+            model_name,
+            transformer=transformer,
+            torch_dtype=_TORCH_DTYPE,
+        )
         # dtype and memory optimizations
         try:
             pipe.enable_attention_slicing()
@@ -86,6 +144,7 @@ def _get_edit_pipeline() -> QwenImageEditPipeline:
 # -----------------------------
 # Public API
 # -----------------------------
+
 
 def img_generate(
     prompt: str,

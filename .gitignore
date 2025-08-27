@@ -2,4 +2,7 @@
 .DS_Store
 __pycache__
 .venv
-.jhson
+*.json
+img.py
+img_edit.py
+DFloat11*
